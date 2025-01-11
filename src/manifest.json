@@ -1,0 +1,4 @@
+{
+    "namespace": "agility_blueprints",
+    "setup": "setup.mjs"
+}
