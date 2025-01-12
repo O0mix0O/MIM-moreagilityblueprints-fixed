@@ -1,14 +1,21 @@
 export function setup(ctx) {
-    ctx.patch(Agility, 'setupBlueprints').before(() => {
-        // Number of blueprints we want to support
-        const maxBlueprints = 30;
+    ctx.settings.section('Blueprint Settings').add({
+        type: 'number',
+        name: 'max-blueprints',
+        label: 'Maximum Blueprints',
+        hint: 'Set the maximum number of blueprints you want to allow. - Then restart',
+        default: 30,
+        min: 5,
+        max: 500,
+    });
 
-        // Check if our custom blueprint storage exists; if not, initialize it
+    ctx.patch(Agility, 'setupBlueprints').before(() => {
+        const maxBlueprints = ctx.settings.section('Blueprint Settings').get('max-blueprints');
+
         if (!game.agility.customBlueprints) {
             game.agility.customBlueprints = new Map();
         }
 
-        // Generate HTML for Load and Save menus
         let loadInnerHtml = '';
         let saveInnerHtml = '';
         for (let i = 0; i < maxBlueprints; i++) {
@@ -23,11 +30,9 @@ export function setup(ctx) {
                 </a>`;
         }
 
-        // Find the relevant DOM elements for Load and Save menus
         const loadElement = document.getElementById('agility-container').getElementsByClassName('dropdown-menu')[0];
         const saveElement = document.getElementById('agility-container').getElementsByClassName('dropdown-menu')[1];
 
-        // Update their innerHTML and add scrolling styles
         loadElement.innerHTML = loadInnerHtml;
         saveElement.innerHTML = saveInnerHtml;
         loadElement.style['overflow-y'] = 'scroll';
@@ -35,30 +40,23 @@ export function setup(ctx) {
         saveElement.style['overflow-y'] = 'scroll';
         saveElement.style['max-height'] = '40vh';
 
-        // Set the maximum number of blueprints for use in the game
         game.agility.maxBlueprints = maxBlueprints;
 
-        // Add event listeners for Load and Save buttons
         for (let i = 0; i < maxBlueprints; i++) {
-            // Load Button Event
             document.getElementById(`agility-load-blueprint-button-${i}`).addEventListener('click', () => {
                 const blueprint = game.agility.customBlueprints.get(i);
                 if (blueprint) {
-                    // Apply the blueprint logic here (e.g., set obstacles, pillars, etc.)
                     console.log(`Loaded blueprint: ${JSON.stringify(blueprint)}`);
                 } else {
                     console.log('No blueprint to load in this slot.');
                 }
             });
 
-            // Save Button Event
             document.getElementById(`agility-save-blueprint-button-${i}`).addEventListener('click', () => {
-                // Gather current agility course configuration
                 const currentBlueprint = {
-                    name: `Blueprint ${i + 1}`, // Replace with user input for custom names if desired
+                    name: `Blueprint ${i + 1}`,
                     data: {
-                        obstacles: [...game.agility.obstacleBuildCount.entries()], // Example of saving obstacle counts
-                        // Add other data points to save as needed
+                        obstacles: [...game.agility.obstacleBuildCount.entries()],
                     },
                 };
                 game.agility.customBlueprints.set(i, currentBlueprint);
