@@ -6,8 +6,8 @@ Welcome to **More Agility Blueprints**, a mod for **Melvor Idle** that expands t
 
 ## Features
 
-- **Save Up to 30 Blueprints**  
-  Players can now store and manage up to 30 different agility blueprints. Each blueprint saves the configuration of obstacles, pillars, and other agility course data.
+- **Save Up to X Blueprints**  
+  Players can now store and manage as many different agility blueprints as they choose. Each blueprint saves the configuration of obstacles, pillars, and other agility course data.
 
 - **Custom Load and Save Menus**  
   Updated Load and Save menus with a scrollable UI for improved usability.
@@ -23,6 +23,8 @@ For easy installation - Subscribe on https://mod.io/g/melvoridle/m/more-agility-
 ## Usage Instructions
 
 Save and Load blueprints as you normally would, though you will now have to scroll to access the full list.
+
+Go to the Mod Setting menu and access "More Agility Blueprints". From here you can enter a value of your choosing. (Note - Have not tested over 500)
 
 ---
 
