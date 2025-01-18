@@ -19,6 +19,7 @@ export function setup(ctx) {
 
                 toggleBlur(isSwalModalVisible);
 
+                // If the modal is removed from the DOM and is no longer visible, stop monitoring
                 if (!document.body.contains(swalModal) && !isSwalModalVisible) {
                     clearInterval(intervalId);
                     toggleBlur(false);
@@ -26,6 +27,18 @@ export function setup(ctx) {
             }, 100);
         }
 
+        // Detect visibility of the modal on game resume or reload
+        const visibilityChangeHandler = () => {
+            if (document.hidden) return;
+
+            // Re-run the modal monitor when the game becomes visible again
+            monitorSwalModal();
+        };
+
+        // Add visibility change event listener
+        document.addEventListener("visibilitychange", visibilityChangeHandler, false);
+
+        // Initial modal monitoring on setup
         monitorSwalModal();
     });
 }
