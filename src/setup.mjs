@@ -1,44 +1,63 @@
 export function setup(ctx) {
     ctx.onInterfaceReady(() => {
-        const swalModalClass = 'swal2-container';
-        const elementsToBlur = ['page-container', 'skill-footer-minibar-container'];
+        const elementsToBlur = ['#page-container', '#skill-footer-minibar-container'];
 
         function toggleBlur(isBlurred) {
             elementsToBlur.forEach((id) => {
-                const element = document.getElementById(id);
+                const element = document.querySelector(id);
                 if (element) {
                     element.style.filter = isBlurred ? 'blur(5px)' : 'none';
                 }
             });
         }
 
-        function monitorSwalModal() {
+        function isElementVisible(element) {
+            // Check if the element is visible by checking its computed display and aria-hidden values
+            const style = window.getComputedStyle(element);
+            const isHidden = style.display === 'none' || element.getAttribute('aria-hidden') === 'true';
+            return !isHidden;
+        }
+
+        function monitorModalClasses() {
             const intervalId = setInterval(() => {
-                const swalModal = document.querySelector(`.${swalModalClass}`);
-                const isSwalModalVisible = swalModal !== null && swalModal.style.display !== 'none';
+                // Check if any visible element has 'swal-infront' or 'modal-infront' class
+                const infrontElements = document.querySelectorAll('.swal-infront, .modal-infront');
+                const isAnyElementVisible = Array.from(infrontElements).some(element => isElementVisible(element));
 
-                toggleBlur(isSwalModalVisible);
+                toggleBlur(isAnyElementVisible);
 
-                // If the modal is removed from the DOM and is no longer visible, stop monitoring
-                if (!document.body.contains(swalModal) && !isSwalModalVisible) {
+                // Stop monitoring when no visible element is found
+                if (!isAnyElementVisible) {
                     clearInterval(intervalId);
                     toggleBlur(false);
                 }
             }, 100);
         }
 
-        // Detect visibility of the modal on game resume or reload
-        const visibilityChangeHandler = () => {
-            if (document.hidden) return;
+        // Start monitoring the elements with 'swal-infront' or 'modal-infront' classes
+        monitorModalClasses();
 
-            // Re-run the modal monitor when the game becomes visible again
-            monitorSwalModal();
-        };
+        // Watch for dynamically added elements and apply the blur if necessary
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                // Check for newly added nodes
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === 1) { // Ensure it's an element node
+                        if (node.classList.contains('swal-infront') || node.classList.contains('modal-infront')) {
+                            // Apply the blur to the newly added element
+                            if (isElementVisible(node)) {
+                                toggleBlur(true);
+                            }
+                        }
+                    }
+                });
+            });
+        });
 
-        // Add visibility change event listener
-        document.addEventListener("visibilitychange", visibilityChangeHandler, false);
-
-        // Initial modal monitoring on setup
-        monitorSwalModal();
+        // Set the observer to watch for added nodes in the document body
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+        });
     });
 }
