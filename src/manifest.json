@@ -1,4 +1,4 @@
 {
-    "namespace": "agility_blueprints",
+    "namespace": "offline_UI",
     "setup": "setup.mjs"
 }
