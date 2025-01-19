@@ -6,7 +6,7 @@ const packageJsonPath = path.resolve(__dirname, "package.json");
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
 const version = packageJson.version;
 
-const zipFileName = `welcomebackblur_${version}.zip`;
+const zipFileName = `moreagilityblueprints_fixed_${version}.zip`;
 const outputDir = path.resolve(__dirname, "dist");
 const outputFilePath = path.join(outputDir, zipFileName);
 
