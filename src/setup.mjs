@@ -2,6 +2,7 @@ export function setup(ctx) {
     ctx.onInterfaceReady(() => {
         const elementsToBlur = ['#page-container', '#skill-footer-minibar-container'];
 
+        // Function to toggle blur on specific elements
         function toggleBlur(isBlurred) {
             elementsToBlur.forEach((id) => {
                 const element = document.querySelector(id);
@@ -9,55 +10,63 @@ export function setup(ctx) {
                     element.style.filter = isBlurred ? 'blur(5px)' : 'none';
                 }
             });
+
+            // Also apply or remove blur for any existing game-notification elements
+            const notifications = document.querySelectorAll('game-notification');
+            notifications.forEach((notification) => {
+                notification.style.filter = isBlurred ? 'blur(5px)' : 'none';
+            });
         }
 
+        // Function to check if an element is visible
         function isElementVisible(element) {
-            // Check if the element is visible by checking its computed display and aria-hidden values
             const style = window.getComputedStyle(element);
             const isHidden = style.display === 'none' || element.getAttribute('aria-hidden') === 'true';
             return !isHidden;
         }
 
-        function monitorModalClasses() {
-            const intervalId = setInterval(() => {
-                // Check if any visible element has 'swal-infront' or 'modal-infront' class
-                const infrontElements = document.querySelectorAll('.swal-infront, .modal-infront');
-                const isAnyElementVisible = Array.from(infrontElements).some(element => isElementVisible(element));
-
-                toggleBlur(isAnyElementVisible);
-
-                // Stop monitoring when no visible element is found
-                if (!isAnyElementVisible) {
-                    clearInterval(intervalId);
-                    toggleBlur(false);
-                }
-            }, 100);
+        // Function to check modal visibility and toggle blur
+        function checkModalVisibility() {
+            const infrontElements = document.querySelectorAll('.swal-infront, .modal-infront');
+            const isAnyElementVisible = Array.from(infrontElements).some((element) => isElementVisible(element));
+            toggleBlur(isAnyElementVisible);
         }
 
-        // Start monitoring the elements with 'swal-infront' or 'modal-infront' classes
-        monitorModalClasses();
+        // Initial check for modals (for the modal displayed at game load)
+        function applyInitialBlur() {
+            const infrontElements = document.querySelectorAll('.swal-infront, .modal-infront');
+            const isAnyElementVisible = Array.from(infrontElements).some((element) => isElementVisible(element));
 
-        // Watch for dynamically added elements and apply the blur if necessary
+            // Immediately apply blur if any modal is already visible
+            if (isAnyElementVisible) {
+                toggleBlur(true);
+            }
+        }
+
+        // Monitor the DOM for changes to dynamically added/removed modals
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
-                // Check for newly added nodes
                 mutation.addedNodes.forEach((node) => {
-                    if (node.nodeType === 1) { // Ensure it's an element node
-                        if (node.classList.contains('swal-infront') || node.classList.contains('modal-infront')) {
-                            // Apply the blur to the newly added element
-                            if (isElementVisible(node)) {
-                                toggleBlur(true);
-                            }
-                        }
+                    if (node.nodeType === 1 && (node.classList.contains('swal-infront') || node.classList.contains('modal-infront'))) {
+                        checkModalVisibility(); // Blur on modal addition
+                    }
+                });
+
+                mutation.removedNodes.forEach((node) => {
+                    if (node.nodeType === 1 && (node.classList.contains('swal-infront') || node.classList.contains('modal-infront'))) {
+                        checkModalVisibility(); // Re-check blur on modal removal
                     }
                 });
             });
         });
 
-        // Set the observer to watch for added nodes in the document body
+        // Set the observer to watch for added and removed nodes in the document body
         observer.observe(document.body, {
             childList: true,
             subtree: true,
         });
+
+        // Perform an initial check to handle the game load modal
+        applyInitialBlur();
     });
 }
